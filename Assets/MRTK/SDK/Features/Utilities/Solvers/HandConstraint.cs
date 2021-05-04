@@ -275,13 +275,22 @@ namespace Microsoft.MixedReality.Toolkit.Utilities.Solvers
                 bool isValidController = IsValidController(trackedController);
                 if (!isValidController)
                 {
-                    // Attempt to switch hands by asking solver handler to prefer the other controller if available
-                    SolverHandler.PreferredTrackedHandedness = SolverHandler.CurrentTrackedHandedness.GetOppositeHandedness();
-                    SolverHandler.RefreshTrackedObject();
+                    if (SolverHandler.TrackedHandness == Handedness.Both)
+                    {
+                        // The tracked controller might not be valid for various reasons (e.g. a subclass could be checking for specific pose in IsValidController),
+                        // but if the SolverHander is configured for either handedness, the other hand may be valid.
+                        // Attempt to switch hands by asking solver handler to prefer the other controller if available
+                        SolverHandler.PreferredTrackedHandedness = SolverHandler.CurrentTrackedHandedness.GetOppositeHandedness();
+                        SolverHandler.RefreshTrackedObject();
 
-                    trackedController = GetController(SolverHandler.CurrentTrackedHandedness);
-                    isValidController = IsValidController(trackedController);
-                    if (!isValidController)
+                        trackedController = GetController(SolverHandler.CurrentTrackedHandedness);
+                        isValidController = IsValidController(trackedController);
+                        if (!isValidController)
+                        {
+                            trackedController = null;
+                        }
+                    }
+                    else
                     {
                         trackedController = null;
                     }
